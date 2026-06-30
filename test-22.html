@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการผลการเรียน ม.1</title>
+    <style>
+        /* ======================================================= */
+        /* 🎨 นำโค้ด CSS มารวมไว้ตรงนี้ */
+        /* ======================================================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-right: 60px;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.05);
+        }
+
+        h3 {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 10px;
+        }
+
+        .role-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #ffc107;
+            color: #333;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .summary-text {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            background-color: #fff;
+        }
+
+        input:focus, select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.2);
+        }
+
+        .step-page {
+            display: none;
+        }
+
+        .step-page.active {
+            display: block;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        button.btn-calc, button { background-color: #28a745; }
+        button:hover { background-color: #218838; }
+        .btn-back { background-color: #6c757d; }
+        .btn-back:hover { background-color: #5a6268; }
+        .btn-calc { background-color: #007bff; }
+        .btn-calc:hover { background-color: #0069d9; }
+        .btn-reset { background-color: #17a2b8; margin-top: 15px; }
+        .btn-reset:hover { background-color: #138496; }
+        .btn-logout { background-color: #dc3545; margin-top: 12px; }
+        .btn-logout:hover { background-color: #bd2130; }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #e9ecef;
+            display: none;
+            border: 1px solid #dee2e6;
+        }
+
+        .result-header {
+            font-weight: bold;
+            font-size: 18px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+            color: #333;
+            text-align: center;
+        }
+
+        #resGrade { font-size: 22px; font-weight: bold; color: #007bff; }
+        .pass { color: #28a745; font-weight: bold; }
+        .fail { color: #dc3545; font-weight: bold; }
+
+        @media (max-width: 380px) {
+            .container { padding: 15px; }
+            h2 { font-size: 18px; margin-top: 20px; }
+            .btn-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>ระบบจัดการผลการเรียน ม.1</h2>
+    
+    <div class="step-page active" id="loginPage">
+        <h3>เข้าสู่ระบบ</h3>
+        <div class="form-group">
+            <label>ชื่อผู้ใช้งาน (Username):</label>
+            <input type="text" id="username" placeholder="Teacher หรือ Student">
+        </div>
+        <div class="form-group">
+            <label>รหัสผ่าน (Password):</label>
+            <input type="password" id="password" placeholder="รหัสผ่าน หรือ รหัสนักเรียน">
+        </div>
+        <button class="btn-calc" onclick="handleLogin()">เข้าสู่ระบบ</button>
+    </div>
+
+    <div class="step-page" id="step1">
+        <div class="role-badge">คุณครู</div>
+        <h3>ขั้นตอนที่ 1: เลือกนักเรียน</h3>
+        <div class="form-group">
+            <label>เลือกชั้นเรียน/ห้องเรียน:</label>
+            <select id="classroom" onchange="updateStudentDropdown()">
+                <option value="">-- กรุณาเลือกห้องเรียน --</option>
+                <option value="m11">ห้อง ม.1/1</option>
+                <option value="m12">ห้อง ม.1/2</option>
+                <option value="m13">ห้อง ม.1/3</option>
+                <option value="m14">ห้อง ม.1/4</option>
+                <option value="m15">ห้อง ม.1/5</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>เลือกชื่อนักเรียน:</label>
+            <select id="studentSelect" disabled>
+                <option value="">-- กรุณาเลือกห้องเรียนก่อน --</option>
+            </select>
+        </div>
+        <button onclick="goToStep(2)">ถัดไป (เลือกวิชา) &raquo;</button>
+        <button class="btn-logout" onclick="logout()">ออกจากระบบ</button>
+    </div>
+
+    <div class="step-page" id="step2">
+        <div class="role-badge">คุณครู</div>
+        <h3>ขั้นตอนที่ 2: เลือกวิชาสามัญ</h3>
+        <p class="summary-text">นักเรียน: <span id="step2StudentName" style="font-weight:bold; color:#007bff;">-</span></p>
+        <div class="form-group">
+            <label>เลือกวิชาที่ต้องการกรอกคะแนน:</label>
+            <select id="courseCode">
+                <option value="123">คณิตศาสตร์ (รหัส 123)</option>
+                <option value="456">เขียนโปรแกรมคอมพิวเตอร์ (รหัส 456)</option>
+            </select>
+        </div>
+        <div class="btn-group">
+            <button class="btn-back" onclick="goToStep(1)">&laquo; ย้อนกลับ</button>
+            <button onclick="goToStep(3)">ถัดไป (กรอกคะแนน) &raquo;</button>
+        </div>
+    </div>
+
+    <div class="step-page" id="step3">
+        <div class="role-badge">คุณครู</div>
+        <h3>ขั้นตอนที่ 3: กรอกคะแนน</h3>
+        <p class="summary-text">นักเรียน: <span id="step3StudentName" style="font-weight:bold;">-</span> <br> วิชา: <span id="step3SubjectName" style="font-weight:bold; color:#007bff;">-</span></p>
+        
+        <div class="form-group">
+            <label>คะแนนเก็บและงาน (0 - 30):</label>
+            <input type="number" id="classwork" min="0" max="30" placeholder="กรอกคะแนนเก็บ">
+        </div>
+        <div class="form-group">
+            <label>คะแนนกลางภาค (0 - 30):</label>
+            <input type="number" id="midterm" min="0" max="30" placeholder="กรอกคะแนนกลางภาค">
+        </div>
+        <div class="form-group">
+            <label>คะแนนปลายภาค (0 - 40):</label>
+            <input type="number" id="final" min="0" max="40" placeholder="กรอกคะแนนปลายภาค">
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn-back" onclick="goToStep(2)">&laquo; ย้อนกลับ</button>
+            <button class="btn-calc" onclick="calculateGrade()">บันทึกและคำนวณเกรด</button>
+        </div>
+
+        <div class="result-box" id="resultBox">
+            <div class="result-header">รายงานผลการเรียน (บันทึกสำเร็จ)</div>
+            <p><strong>ห้องเรียน:</strong> <span id="resClass"></span></p>
+            <p><strong>ชื่อ-นามสกุล:</strong> <span id="resName" style="color: #dc3545; font-weight: bold;"></span></p>
+            <p><strong>วิชา:</strong> <span id="resSubject"></span></p>
+            <p><strong>คะแนนรวม:</strong> <span id="resTotal"></span> / 100</p>
+            <p><strong>เกรดที่ได้:</strong> <span id="resGrade"></span></p>
+            <p><strong>สถานะ:</strong> <span id="resStatus"></span></p>
+            <button class="btn-reset" onclick="resetForm()">คำนวณคนใหม่</button>
+        </div>
+    </div>
+
+    <div class="step-page" id="studentDashboard">
+        <div class="role-badge" style="background:#007bff;">นักเรียน</div>
+        <h3>ผลการเรียนของคุณ</h3>
+        <p class="summary-text">ยินดีต้อนรับ: <span id="stuName" style="font-weight:bold; color:#28a745;">-</span><br>รหัสประจำตัว: <span id="stuCode" style="font-weight:bold;">-</span></p>
+        
+        <div class="result-box" style="display:block; margin-top:15px;">
+            <div class="result-header">สมุดพกรายงานเกรดรายวิชา</div>
+            <div id="studentGradeReport">
+                <p style="text-align: center; color: #666;">ยังไม่มีการบันทึกคะแนนจากคุณครูในรอบนี้</p>
+            </div>
+        </div>
+        <button class="btn-logout" onclick="logout()" style="margin-top:15px;">ออกจากระบบ</button>
+    </div>
+</div>
+
+<script>
+// ======================================================= 
+// ⚙️ นำโค้ด JavaScript มารวมไว้ตรงนี้
+// =======================================================
+const studentsData = {
+    m11: { "101": "เด็กชาย ณัฐพงศ์ ใจดี", "102": "เด็กชาย ธนกฤต สุขสม", "103": "เด็กหญิง พิมพ์ชนก แก้วใส", "104": "เด็กหญิง กัญญารัตน์ วงศ์ดี", "105": "เด็กชาย ภูวดล อินทร์แก้ว" },
+    m12: { "201": "เด็กหญิง อริสา มณีโชติ", "202": "เด็กชาย กิตติพงศ์ ศรีสุข", "203": "เด็กชาย วรพล บุญมาก", "204": "เด็กหญิง นันทิชา แซ่ลิ้ม", "205": "เด็กชาย ปวริศร์ คงเจริญ" },
+    m13: { "301": "เด็กชาย ชัยวัฒน์ เพชรทอง", "302": "เด็กหญิง สุชาดา ทองดี", "303": "เด็กชาย ณรงค์ฤทธิ์ แก้วงาม", "304": "เด็กหญิง มาลินี สุขใจ", "305": "เด็กชาย อัครเดช วิไลลักษณ์" },
+    m14: { "401": "เด็กหญิง กานต์พิชชา รุ่งเรือง", "402": "เด็กชาย ธีรภัทร ศรีแก้ว", "403": "เด็กชาย ศุภกร ใจงาม", "404": "เด็กหญิง พิชามญชุ์ นิลวงศ์", "405": "เด็กชาย วีรภัทร มั่นคง" },
+    m15: { "501": "เด็กชาย นนทกร ชัยชนะ", "502": "เด็กหญิง ชลธิชา แสงทอง", "503": "เด็กชาย พีรพัฒน์ อินทร", "504": "เด็กหญิง อัญชลี วัฒนสุข", "505": "เด็กชาย ธนวัฒน์ โพธิ์ศรี" }
+};
+
+let gradeStorage = {};
+
+function handleLogin() {
+    // .trim() จะช่วยตัดช่องว่าง/เว้นวรรค ที่มือถือแอบเติมให้ออกไปทั้งหมด
+    var user = document.getElementById("username").value.trim();
+    var pass = document.getElementById("password").value.trim();
+
+    // ปรับให้พิมพ์คำว่า teacher หรือ Teacher แบบไหนก็เข้าได้หมด
+    if (user.toLowerCase() === "teacher" && pass === "1234") {
+        alert("ยินดีต้อนรับคุณครู เข้าสู่ระบบบันทึกคะแนน");
+        showPage("step1");
+        return;
+    } 
+    
+    // ปรับให้พิมพ์คำว่า student หรือ Student แบบไหนก็เข้าได้หมดเช่นกัน
+    if (user.toLowerCase() === "student") {
+        var foundName = null;
+        for (let room in studentsData) {
+            if (studentsData[room][pass]) {
+                foundName = studentsData[room][pass];
+                break;
+            }
+        }
+
+        if (foundName) {
+            alert("ยินดีต้อนรับ " + foundName + " เข้าสู่ระบบดูผลการเรียน");
+            document.getElementById("stuName").innerText = foundName;
+            document.getElementById("stuCode").innerText = pass;
+            displayStudentGrades(pass);
+            showPage("studentDashboard");
+            return;
+        }
+    }
+    alert("Username หรือ Password ไม่ถูกต้อง! (ตรวจสอบรหัสผ่านอีกครั้ง)");
+}
+
+function updateStudentDropdown() {
+    var classroom = document.getElementById("classroom").value;
+    var studentSelect = document.getElementById("studentSelect");
+    studentSelect.innerHTML = "";
+    
+    if (classroom === "") {
+        studentSelect.innerHTML = '<option value="">-- กรุณาเลือกห้องเรียนก่อน --</option>';
+        studentSelect.disabled = true;
+        return;
+    }
+    
+    studentSelect.disabled = false;
+    studentSelect.innerHTML = '<option value="">-- เลือกชื่อนักเรียน --</option>';
+    
+    for (let id in studentsData[classroom]) {
+        var option = document.createElement("option");
+        option.value = id;
+        option.text = id + " - " + studentsData[classroom][id];
+        studentSelect.appendChild(option);
+    }
+}
+
+function showPage(pageId) {
+    document.querySelectorAll('.step-page').forEach(page => page.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+}
+
+function goToStep(step) {
+    var studentSelect = document.getElementById("studentSelect");
+    var studentID = studentSelect.value;
+    var classroom = document.getElementById("classroom").value;
+    
+    if (step === 2) {
+        if (!studentID) { alert("กรุณาเลือกชื่อนักเรียนก่อนครับ!"); return; }
+        document.getElementById("step2StudentName").innerText = studentsData[classroom][studentID];
+    }
+    if (step === 3) {
+        var courseCode = document.getElementById("courseCode").value;
+        var subjectName = (courseCode == "456") ? "เขียนโปรแกรมคอมพิวเตอร์" : "คณิตศาสตร์";
+        document.getElementById("step3StudentName").innerText = studentsData[classroom][studentID];
+        document.getElementById("step3SubjectName").innerText = subjectName + " (รหัส " + courseCode + ")";
+    }
+    showPage("step" + step);
+}
+
+function calculateGrade() {
+    var classwork = parseFloat(document.getElementById("classwork").value);
+    var midterm = parseFloat(document.getElementById("midterm").value);
+    var final = parseFloat(document.getElementById("final").value);
+
+    if (isNaN(classwork) || isNaN(midterm) || isNaN(final)) { alert("กรุณากรอกคะแนนให้ครบถ้วน!"); return; }
+    if (classwork < 0 || classwork > 30 || midterm < 0 || midterm > 30 || final < 0 || final > 40) {
+        alert("กรุณากรอกคะแนนตามเกณฑ์ที่กำหนด (เก็บ 30, กลางภาค 30, ปลายภาค 40)"); return;
+    }
+
+    var classroomText = document.getElementById("classroom").options[document.getElementById("classroom").selectedIndex].text;
+    var studentID = document.getElementById("studentSelect").value;
+    var classroom = document.getElementById("classroom").value;
+    var studentName = studentsData[classroom][studentID];
+    var courseCode = document.getElementById("courseCode").value;
+    var subjectName = (courseCode == "456") ? "เขียนโปรแกรมคอมพิวเตอร์" : "คณิตศาสตร์";
+    var totalScore = classwork + midterm + final;
+    var gradeResult = 0.0;
+
+    if (totalScore >= 80) gradeResult = 4.0;
+    else if (totalScore >= 75) gradeResult = 3.5;
+    else if (totalScore >= 70) gradeResult = 3.0;
+    else if (totalScore >= 65) gradeResult = 2.5;
+    else if (totalScore >= 60) gradeResult = 2.0;
+    else if (totalScore >= 55) gradeResult = 1.5;
+    else if (totalScore >= 50) gradeResult = 1.0;
+    else gradeResult = 0.0;
+
+    if (!gradeStorage[studentID]) { gradeStorage[studentID] = {}; }
+    gradeStorage[studentID][courseCode] = {
+        subject: subjectName,
+        total: totalScore.toFixed(2),
+        grade: gradeResult.toFixed(1)
+    };
+
+    document.getElementById("resClass").innerText = classroomText;
+    document.getElementById("resName").innerText = studentName;
+    document.getElementById("resSubject").innerText = subjectName + " (รหัส " + courseCode + ")";
+    document.getElementById("resTotal").innerText = totalScore.toFixed(2);
+    document.getElementById("resGrade").innerText = gradeResult.toFixed(1);
+
+    var statusElement = document.getElementById("resStatus");
+    if (gradeResult >= 1.0) { statusElement.innerText = "PASSED (สอบผ่าน)"; statusElement.className = "pass"; } 
+    else { statusElement.innerText = "FAILED (สอบไม่ผ่าน)"; statusElement.className = "fail"; }
+
+    document.getElementById("resultBox").style.display = "block";
+}
+
+function displayStudentGrades(studentID) {
+    var reportDiv = document.getElementById("studentGradeReport");
+    reportDiv.innerHTML = "";
+    var scores = gradeStorage[studentID];
+    
+    if (!scores || Object.keys(scores).length === 0) {
+        reportDiv.innerHTML = '<p style="text-align: center; color: #666;">ยังไม่มีการบันทึกคะแนนจากคุณครูในรอบนี้</p>';
+        return;
+    }
+    
+    let count = 1;
+    for (let code in scores) {
+        var p = document.createElement("p");
+        p.innerHTML = `<strong>${count}. วิชา${scores[code].subject} (รหัส ${code})</strong><br>` +
+                      `&nbsp;&nbsp;&nbsp;&nbsp;คะแนนรวม: ${scores[code].total} / 100 | <span class="pass">เกรด ${scores[code].grade}</span>`;
+        reportDiv.appendChild(p);
+        count++;
+    }
+}
+
+function resetForm() {
+    document.getElementById("classroom").value = "";
+    document.getElementById("classwork").value = "";
+    document.getElementById("midterm").value = "";
+    document.getElementById("final").value = "";
+    document.getElementById("resultBox").style.display = "none";
+    updateStudentDropdown();
+    showPage("step1");
+}
+
+function logout() {
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
+    showPage("loginPage");
+}
+</script>
+</body>
+</html>
